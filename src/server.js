@@ -18,13 +18,15 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 2001;
 
-(async () => {
-    try {
-        await initMongoConnection(); // Підключення до бази
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
-    } catch (error) {
-        console.error('Failed to start the server:', error.message);
-    }
-})();
+async function startServer() {
+  try {
+    await initMongoConnection(); 
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start the server:', error.message);
+  }
+}
+
+export default startServer;

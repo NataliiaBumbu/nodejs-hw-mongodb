@@ -1,21 +1,20 @@
-import createError from 'http-errors'; // Для створення помилок
-import ContactModel from '../models/contact.js'; // Модель контактів
+import createError from 'http-errors'; 
+import ContactModel from '../models/contact.js'; 
 
 // Отримати всі контакти
 export const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await ContactModel.find(); // Отримує всі контакти
+    const contacts = await ContactModel.find(); 
     res.status(200).json({
       status: 200,
       message: "Successfully retrieved all contacts",
       data: contacts,
     });
   } catch (error) {
-    next(error); // Передає помилку до errorHandler
+    next(error); 
   }
 };
 
-// Отримати контакт за ID
 export const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -31,16 +30,15 @@ export const getContactById = async (req, res, next) => {
       data: contact,
     });
   } catch (error) {
-    next(error); // Передає помилку до errorHandler
+    next(error); 
   }
 };
 
-// Створити новий контакт
 export const createContact = async (req, res, next) => {
   try {
     const { name, phoneNumber, contactType, email, isFavourite } = req.body;
 
-    // Перевірка обов'язкових полів
+    
     if (!name || !phoneNumber || !contactType) {
       throw createError(400, "Name, phoneNumber, and contactType are required fields.");
     }
@@ -59,11 +57,11 @@ export const createContact = async (req, res, next) => {
       data: newContact,
     });
   } catch (error) {
-    next(error); // Передає помилку до errorHandler
+    next(error); 
   }
 };
 
-// Оновити контакт за ID
+
 export const updateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -71,7 +69,7 @@ export const updateContact = async (req, res, next) => {
     const updatedContact = await ContactModel.findByIdAndUpdate(
       contactId,
       req.body,
-      { new: true } // Повертає оновлений документ
+      { new: true } 
     );
 
     if (!updatedContact) {
@@ -84,11 +82,11 @@ export const updateContact = async (req, res, next) => {
       data: updatedContact,
     });
   } catch (error) {
-    next(error); // Передає помилку до errorHandler
+    next(error); 
   }
 };
 
-// Видалити контакт за ID
+
 export const deleteContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
@@ -99,8 +97,8 @@ export const deleteContact = async (req, res, next) => {
       throw createError(404, "Contact not found");
     }
 
-    res.status(204).send(); // Відповідь без тіла, статус 204
+    res.status(204).send(); 
   } catch (error) {
-    next(error); // Передає помилку до errorHandler
+    next(error); /
   }
 };
