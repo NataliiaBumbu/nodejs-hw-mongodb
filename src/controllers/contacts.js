@@ -1,8 +1,7 @@
-import mongoose from 'mongoose'; // Для перевірки ObjectId
 import createError from 'http-errors'; // Для створення помилок
 import ContactModel from '../models/contact.js'; // Модель контактів
 
-
+// Отримати всі контакти
 export const getAllContacts = async (req, res, next) => {
   try {
     const contacts = await ContactModel.find(); // Отримує всі контакти
@@ -20,11 +19,6 @@ export const getAllContacts = async (req, res, next) => {
 export const getContactById = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-
-    // Перевірка валідності ObjectId
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      throw createError(400, "Invalid contact ID");
-    }
 
     const contact = await ContactModel.findById(contactId);
     if (!contact) {
@@ -44,10 +38,24 @@ export const getContactById = async (req, res, next) => {
 // Створити новий контакт
 export const createContact = async (req, res, next) => {
   try {
-    const newContact = await ContactModel.create(req.body); // Створює новий контакт у базі даних
+    const { name, phoneNumber, contactType, email, isFavourite } = req.body;
+
+    // Перевірка обов'язкових полів
+    if (!name || !phoneNumber || !contactType) {
+      throw createError(400, "Name, phoneNumber, and contactType are required fields.");
+    }
+
+    const newContact = await ContactModel.create({
+      name,
+      phoneNumber,
+      email,
+      isFavourite,
+      contactType,
+    });
+
     res.status(201).json({
       status: 201,
-      message: "Contact successfully created",
+      message: "Successfully created a contact!",
       data: newContact,
     });
   } catch (error) {
@@ -59,11 +67,6 @@ export const createContact = async (req, res, next) => {
 export const updateContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-
-    // Перевірка валідності ObjectId
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      throw createError(400, "Invalid contact ID");
-    }
 
     const updatedContact = await ContactModel.findByIdAndUpdate(
       contactId,
@@ -90,21 +93,13 @@ export const deleteContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
 
-    // Перевірка валідності ObjectId
-    if (!mongoose.Types.ObjectId.isValid(contactId)) {
-      throw createError(400, "Invalid contact ID");
-    }
-
     const deletedContact = await ContactModel.findByIdAndDelete(contactId);
 
     if (!deletedContact) {
       throw createError(404, "Contact not found");
     }
 
-    res.status(200).json({
-      status: 200,
-      message: `Successfully deleted contact with ID ${contactId}`,
-    });
+    res.status(204).send(); // Відповідь без тіла, статус 204
   } catch (error) {
     next(error); // Передає помилку до errorHandler
   }
