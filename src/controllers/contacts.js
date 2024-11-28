@@ -1,6 +1,6 @@
 import createError from 'http-errors'; 
 import ContactModel from '../models/contact.js'; 
-import ctrlWrapper from '../helpers/ctrlWrapper.js'; 
+import ctrlWrapper from '../utils/ctrlWrapper.js'; 
 
 // Отримати всі контакти
 const getAllContacts = async (req, res) => {
