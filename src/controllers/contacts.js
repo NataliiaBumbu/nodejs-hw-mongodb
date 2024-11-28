@@ -3,7 +3,7 @@ import ContactModel from '../models/contact.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js'; 
 
 // Отримати всі контакти
-const getAllContacts = async (req, res) => {
+const getAllContactsHandler = async (req, res) => {
   const contacts = await ContactModel.find();
   res.status(200).json({
     status: 200,
@@ -13,7 +13,7 @@ const getAllContacts = async (req, res) => {
 };
 
 // Отримати контакт за ID
-const getContactById = async (req, res) => {
+const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
   const contact = await ContactModel.findById(contactId);
   if (!contact) {
@@ -27,7 +27,7 @@ const getContactById = async (req, res) => {
 };
 
 // Створити новий контакт
-const createContact = async (req, res) => {
+const createContactHandler = async (req, res) => {
   const { name, phoneNumber, contactType, email, isFavourite } = req.body;
   if (!name || !phoneNumber || !contactType) {
     throw createError(400, "Name, phoneNumber, and contactType are required fields.");
@@ -47,7 +47,7 @@ const createContact = async (req, res) => {
 };
 
 // Оновити контакт за ID
-const updateContact = async (req, res) => {
+const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const updatedContact = await ContactModel.findByIdAndUpdate(contactId, req.body, {
     new: true, 
@@ -63,7 +63,7 @@ const updateContact = async (req, res) => {
 };
 
 // Видалити контакт за ID
-const deleteContact = async (req, res) => {
+const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const deletedContact = await ContactModel.findByIdAndDelete(contactId);
   if (!deletedContact) {
@@ -73,10 +73,8 @@ const deleteContact = async (req, res) => {
 };
 
 // Експортуємо контролери, обгорнуті у ctrlWrapper
-export default {
-  getAllContacts: ctrlWrapper(getAllContacts),
-  getContactById: ctrlWrapper(getContactById),
-  createContact: ctrlWrapper(createContact),
-  updateContact: ctrlWrapper(updateContact),
-  deleteContact: ctrlWrapper(deleteContact),
-};
+export const getAllContacts = ctrlWrapper(getAllContactsHandler);
+export const getContactById = ctrlWrapper(getContactByIdHandler);
+export const createContact = ctrlWrapper(createContactHandler);
+export const updateContact = ctrlWrapper(updateContactHandler);
+export const deleteContact = ctrlWrapper(deleteContactHandler);

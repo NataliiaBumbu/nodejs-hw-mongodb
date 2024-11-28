@@ -16,7 +16,7 @@ app.use('/contacts', contactsRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 2001;
+const PORT = process.env.PORT || 2002;
 
 async function startServer() {
   try {
