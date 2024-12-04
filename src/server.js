@@ -16,12 +16,12 @@ app.use('/contacts', contactsRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 2001;
+const PORT = process.env.PORT || 6060;
 
 async function startServer() {
   try {
     console.log("Starting the server...");
-    await initMongoConnection(); // Ініціалізуємо підключення до MongoDB
+    await initMongoConnection(); 
     console.log("MongoDB connection established!");
 
     app.listen(PORT, () => {
