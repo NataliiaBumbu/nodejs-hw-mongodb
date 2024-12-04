@@ -16,17 +16,23 @@ app.use('/contacts', contactsRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 2002;
+const PORT = process.env.PORT || 2001;
 
 async function startServer() {
   try {
-    await initMongoConnection(); 
+    console.log("Starting the server...");
+    await initMongoConnection(); // Ініціалізуємо підключення до MongoDB
+    console.log("MongoDB connection established!");
+
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start the server:', error.message);
+    console.error("Failed to start the server:", error.message);
   }
 }
+
+startServer();
+
 
 export default startServer;
