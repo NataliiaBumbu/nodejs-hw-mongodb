@@ -40,3 +40,58 @@ export const loginUserService = async ({ email, password }) => {
 
   return { accessToken, refreshToken };
 };
+
+// Оновлення сесії
+export const refreshSessionService = async (refreshToken) => {
+  if (!refreshToken) {
+    throw createHttpError(401, 'Refresh token is missing');
+  }
+
+  // Перевірка рефреш токена
+  let decoded;
+  try {
+    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    throw createHttpError(401, 'Invalid refresh token');
+  }
+
+  const session = await SessionModel.findOne({ refreshToken });
+  if (!session) {
+    throw createHttpError(401, 'Session not found');
+  }
+
+  // Створення нового access та refresh токенів
+  const accessToken = jwt.sign({ userId: decoded.userId }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: '15m',
+  });
+
+  const newRefreshToken = jwt.sign({ userId: decoded.userId }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '30d',
+  });
+
+  // Видалення старої сесії
+  await SessionModel.findOneAndDelete({ refreshToken });
+
+  // Створення нової сесії
+  await SessionModel.create({
+    userId: decoded.userId,
+    accessToken,
+    refreshToken: newRefreshToken,
+    accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
+    refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
+  });
+
+  return { accessToken, refreshToken: newRefreshToken };
+};
+
+// Видалення сесії
+export const logoutUserService = async (refreshToken) => {
+  if (!refreshToken) {
+    throw createHttpError(401, 'Refresh token is missing');
+  }
+
+  const session = await SessionModel.findOneAndDelete({ refreshToken });
+  if (!session) {
+    throw createHttpError(401, 'Session not found');
+  }
+};

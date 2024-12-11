@@ -9,8 +9,11 @@ import {
 import validateBody from '../middlewares/validateBody.js';
 import isValidId from '../middlewares/isValidId.js';
 import { createContactSchema, updateContactSchema } from '../utils/contactSchemas.js';
+import authenticate from '../middlewares/authenticate.js';
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get('/', getAllContacts);
 router.get('/:contactId', isValidId, getContactById);

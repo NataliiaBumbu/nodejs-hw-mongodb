@@ -1,54 +1,50 @@
 import createError from 'http-errors'; 
 import ContactModel from '../models/contact.js'; 
-import ctrlWrapper from '../utils/ctrlWrapper.js'; 
+import ctrlWrapper from '../utils/ctrlWrapper.js';
 
-// Отримати всі контакти з пагінацією, сортуванням і фільтрацією
+// Отримати всі контакти користувача
 const getAllContactsHandler = async (req, res) => {
-  const { 
-    page = 1, 
-    perPage = 10, 
-    sortBy = "name", 
-    sortOrder = "asc", 
-    type, 
-    isFavourite 
-  } = req.query; // Отримуємо параметри запиту
+  const {
+    page = 1,
+    perPage = 10,
+    sortBy = "name",
+    sortOrder = "asc",
+    type,
+    isFavourite,
+  } = req.query;
+  const { _id: userId } = req.user;
 
-  const pageNumber = Number(page); // Перетворюємо на число
+  const pageNumber = Number(page);
   const itemsPerPage = Number(perPage);
   const sortDirection = sortOrder.toLowerCase() === "desc" ? -1 : 1;
 
-  // Формуємо фільтр
-  const filter = {};
-  if (type) {
-    filter.contactType = type; // Фільтрація за типом
-  }
-  if (isFavourite !== undefined) {
-    filter.isFavourite = isFavourite === "true"; // Фільтрація за обраними
-  }
+  const filter = { userId };
+  if (type) filter.contactType = type;
+  if (isFavourite !== undefined) filter.isFavourite = isFavourite === "true";
 
-  const totalItems = await ContactModel.countDocuments(filter); // Загальна кількість елементів
-  const totalPages = Math.ceil(totalItems / itemsPerPage); // Загальна кількість сторінок
+  const totalItems = await ContactModel.countDocuments(filter);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (pageNumber > totalPages && totalItems > 0) {
     throw createError(400, "Page number exceeds total pages.");
   }
 
-  const contacts = await ContactModel.find(filter) // Застосовуємо фільтр
-    .sort({ [sortBy]: sortDirection }) // Сортування
-    .skip((pageNumber - 1) * itemsPerPage) // Пропускаємо елементи для попередніх сторінок
-    .limit(itemsPerPage); // Обмежуємо кількість елементів
+  const contacts = await ContactModel.find(filter)
+    .sort({ [sortBy]: sortDirection })
+    .skip((pageNumber - 1) * itemsPerPage)
+    .limit(itemsPerPage);
 
   res.status(200).json({
     status: 200,
     message: "Successfully retrieved all contacts",
     data: {
-      data: contacts, // Масив контактів
-      page: pageNumber, // Поточна сторінка
-      perPage: itemsPerPage, // Кількість елементів на сторінці
-      totalItems, // Загальна кількість елементів
-      totalPages, // Загальна кількість сторінок
-      hasPreviousPage: pageNumber > 1, // Чи є попередня сторінка
-      hasNextPage: pageNumber < totalPages, // Чи є наступна сторінка
+      contacts,
+      page: pageNumber,
+      perPage: itemsPerPage,
+      totalItems,
+      totalPages,
+      hasPreviousPage: pageNumber > 1,
+      hasNextPage: pageNumber < totalPages,
     },
   });
 };
@@ -56,10 +52,11 @@ const getAllContactsHandler = async (req, res) => {
 // Отримати контакт за ID
 const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
-  const contact = await ContactModel.findById(contactId);
-  if (!contact) {
-    throw createError(404, "Contact not found");
-  }
+  const { _id: userId } = req.user;
+
+  const contact = await ContactModel.findOne({ _id: contactId, userId });
+  if (!contact) throw createError(404, "Contact not found");
+
   res.status(200).json({
     status: 200,
     message: `Successfully retrieved contact with ID ${contactId}`,
@@ -69,17 +66,9 @@ const getContactByIdHandler = async (req, res) => {
 
 // Створити новий контакт
 const createContactHandler = async (req, res) => {
-  const { name, phoneNumber, contactType, email, isFavourite } = req.body;
-  if (!name || !phoneNumber || !contactType) {
-    throw createError(400, "Name, phoneNumber, and contactType are required fields.");
-  }
-  const newContact = await ContactModel.create({
-    name,
-    phoneNumber,
-    email,
-    isFavourite,
-    contactType,
-  });
+  const { body, user } = req;
+  const newContact = await ContactModel.create({ ...body, userId: user._id });
+
   res.status(201).json({
     status: 201,
     message: "Successfully created a contact!",
@@ -90,12 +79,15 @@ const createContactHandler = async (req, res) => {
 // Оновити контакт за ID
 const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const updatedContact = await ContactModel.findByIdAndUpdate(contactId, req.body, {
-    new: true, 
-  });
-  if (!updatedContact) {
-    throw createError(404, "Contact not found");
-  }
+  const { _id: userId } = req.user;
+
+  const updatedContact = await ContactModel.findOneAndUpdate(
+    { _id: contactId, userId },
+    req.body,
+    { new: true }
+  );
+  if (!updatedContact) throw createError(404, "Contact not found");
+
   res.status(200).json({
     status: 200,
     message: `Successfully updated contact with ID ${contactId}`,
@@ -106,14 +98,18 @@ const updateContactHandler = async (req, res) => {
 // Видалити контакт за ID
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const deletedContact = await ContactModel.findByIdAndDelete(contactId);
-  if (!deletedContact) {
-    throw createError(404, "Contact not found");
-  }
-  res.status(204).send(); 
+  const { _id: userId } = req.user;
+
+  const deletedContact = await ContactModel.findOneAndDelete({
+    _id: contactId,
+    userId,
+  });
+  if (!deletedContact) throw createError(404, "Contact not found");
+
+  res.status(204).send();
 };
 
-// Експортуємо контролери, обгорнуті у ctrlWrapper
+// Експорт
 export const getAllContacts = ctrlWrapper(getAllContactsHandler);
 export const getContactById = ctrlWrapper(getContactByIdHandler);
 export const createContact = ctrlWrapper(createContactHandler);
