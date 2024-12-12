@@ -1,6 +1,7 @@
 import createError from 'http-errors'; 
 import ContactModel from '../models/contact.js'; 
 import ctrlWrapper from '../utils/ctrlWrapper.js';
+import createHttpError from 'http-errors';
 
 // Отримати всі контакти користувача
 const getAllContactsHandler = async (req, res) => {
@@ -52,10 +53,10 @@ const getAllContactsHandler = async (req, res) => {
 // Отримати контакт за ID
 const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const { _id: userId } = req.user; 
 
-  const contact = await ContactModel.findOne({ _id: contactId, userId });
-  if (!contact) throw createError(404, "Contact not found");
+  const contact = await ContactModel.findOne({ _id: contactId, userId }); // Пошук одночасно за contactId та userId
+  if (!contact) throw createHttpError(404, "Contact not found");
 
   res.status(200).json({
     status: 200,
@@ -63,6 +64,7 @@ const getContactByIdHandler = async (req, res) => {
     data: contact,
   });
 };
+
 
 // Створити новий контакт
 const createContactHandler = async (req, res) => {
@@ -82,11 +84,11 @@ const updateContactHandler = async (req, res) => {
   const { _id: userId } = req.user;
 
   const updatedContact = await ContactModel.findOneAndUpdate(
-    { _id: contactId, userId },
+    { _id: contactId, userId }, 
     req.body,
-    { new: true }
+    { new: true } 
   );
-  if (!updatedContact) throw createError(404, "Contact not found");
+  if (!updatedContact) throw createHttpError(404, "Contact not found");
 
   res.status(200).json({
     status: 200,
@@ -95,19 +97,21 @@ const updateContactHandler = async (req, res) => {
   });
 };
 
+
 // Видалити контакт за ID
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const { _id: userId } = req.user;
 
   const deletedContact = await ContactModel.findOneAndDelete({
-    _id: contactId,
-    userId,
+    _id: contactId, 
+    userId, 
   });
-  if (!deletedContact) throw createError(404, "Contact not found");
+  if (!deletedContact) throw createHttpError(404, "Contact not found");
 
-  res.status(204).send();
+  res.status(204).send(); 
 };
+
 
 // Експорт
 export const getAllContacts = ctrlWrapper(getAllContactsHandler);

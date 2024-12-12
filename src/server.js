@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import initMongoConnection from './db/initMongoConnection.js';
 import contactsRouter from './routers/contacts.js';
-import authRouter from './routers/auth.js'; // Маршрути авторизації
+import authRouter from './routers/auth.js'; 
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 import cookieParser from 'cookie-parser';
@@ -25,7 +25,7 @@ app.use(notFoundHandler);
 // Middleware для обробки помилок
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 6060;
 
 async function startServer() {
   try {

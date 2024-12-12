@@ -29,14 +29,24 @@ export const loginUserService = async ({ email, password }) => {
     expiresIn: '30d',
   });
 
+  // Видалення існуючої сесії
   await SessionModel.findOneAndDelete({ userId: user._id });
-  await SessionModel.create({
-    userId: user._id,
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
-    refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  });
+
+  // Створення нової сесії
+  try {
+    await SessionModel.create({
+      userId: user._id,
+      accessToken,
+      refreshToken,
+      accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
+      refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      throw createHttpError(409, 'Duplicate session error');
+    }
+    throw error;
+  }
 
   return { accessToken, refreshToken };
 };
@@ -47,11 +57,13 @@ export const refreshSessionService = async (refreshToken) => {
     throw createHttpError(401, 'Refresh token is missing');
   }
 
-  // Перевірка рефреш токена
   let decoded;
   try {
     decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      throw createHttpError(401, 'Refresh token expired');
+    }
     throw createHttpError(401, 'Invalid refresh token');
   }
 
@@ -60,7 +72,6 @@ export const refreshSessionService = async (refreshToken) => {
     throw createHttpError(401, 'Session not found');
   }
 
-  // Створення нового access та refresh токенів
   const accessToken = jwt.sign({ userId: decoded.userId }, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: '15m',
   });
@@ -73,13 +84,20 @@ export const refreshSessionService = async (refreshToken) => {
   await SessionModel.findOneAndDelete({ refreshToken });
 
   // Створення нової сесії
-  await SessionModel.create({
-    userId: decoded.userId,
-    accessToken,
-    refreshToken: newRefreshToken,
-    accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
-    refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
-  });
+  try {
+    await SessionModel.create({
+      userId: decoded.userId,
+      accessToken,
+      refreshToken: newRefreshToken,
+      accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
+      refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      throw createHttpError(409, 'Duplicate session error');
+    }
+    throw error;
+  }
 
   return { accessToken, refreshToken: newRefreshToken };
 };
