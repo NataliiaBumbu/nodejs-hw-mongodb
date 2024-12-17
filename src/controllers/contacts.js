@@ -1,35 +1,28 @@
-import createError from 'http-errors'; 
-import ContactModel from '../models/contact.js'; 
+import createError from 'http-errors';
+import mongoose from 'mongoose';
+import ContactModel from '../models/contact.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js';
-import createHttpError from 'http-errors';
 
-// Отримати всі контакти користувача
+// ======================= GET ALL CONTACTS ==========================
 const getAllContactsHandler = async (req, res) => {
-  const {
-    page = 1,
-    perPage = 10,
-    sortBy = "name",
-    sortOrder = "asc",
-    type,
-    isFavourite,
-  } = req.query;
+  const { page = 1, perPage = 10, sortBy = "name", sortOrder = "asc", type, isFavourite } = req.query;
   const { _id: userId } = req.user;
 
-  const pageNumber = Number(page);
-  const itemsPerPage = Number(perPage);
+  // Перевірка, чи є userId дійсним ObjectId
+  const userObjectId = mongoose.Types.ObjectId(userId);
+  if (!mongoose.Types.ObjectId.isValid(userObjectId)) {
+    throw createError(400, "Invalid user ID");
+  }
+
+  const pageNumber = Math.max(Number(page), 1);
+  const itemsPerPage = Math.max(Number(perPage), 5);
   const sortDirection = sortOrder.toLowerCase() === "desc" ? -1 : 1;
 
-  const filter = { userId };
+  const filter = { userId: userObjectId };
   if (type) filter.contactType = type;
   if (isFavourite !== undefined) filter.isFavourite = isFavourite === "true";
 
   const totalItems = await ContactModel.countDocuments(filter);
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  if (pageNumber > totalPages && totalItems > 0) {
-    throw createError(400, "Page number exceeds total pages.");
-  }
-
   const contacts = await ContactModel.find(filter)
     .sort({ [sortBy]: sortDirection })
     .skip((pageNumber - 1) * itemsPerPage)
@@ -43,33 +36,29 @@ const getAllContactsHandler = async (req, res) => {
       page: pageNumber,
       perPage: itemsPerPage,
       totalItems,
-      totalPages,
+      totalPages: Math.ceil(totalItems / itemsPerPage),
       hasPreviousPage: pageNumber > 1,
-      hasNextPage: pageNumber < totalPages,
+      hasNextPage: pageNumber < Math.ceil(totalItems / itemsPerPage),
     },
   });
 };
 
-// Отримати контакт за ID
-const getContactByIdHandler = async (req, res) => {
-  const { contactId } = req.params;
-  const { _id: userId } = req.user; 
-
-  const contact = await ContactModel.findOne({ _id: contactId, userId }); // Пошук одночасно за contactId та userId
-  if (!contact) throw createHttpError(404, "Contact not found");
-
-  res.status(200).json({
-    status: 200,
-    message: `Successfully retrieved contact with ID ${contactId}`,
-    data: contact,
-  });
-};
-
-
-// Створити новий контакт
+// ======================= CREATE CONTACT ==========================
 const createContactHandler = async (req, res) => {
-  const { body, user } = req;
-  const newContact = await ContactModel.create({ ...body, userId: user._id });
+  const { _id: userId } = req.user;
+  const { name, phoneNumber, contactType } = req.body;
+
+  // Перевірка, чи є userId дійсним ObjectId
+  const userObjectId = mongoose.Types.ObjectId(userId);
+  if (!mongoose.Types.ObjectId.isValid(userObjectId)) {
+    throw createError(400, "Invalid user ID");
+  }
+
+  if (!name || !phoneNumber || !contactType) {
+    throw createError(400, "Name, phoneNumber, and contactType are required fields.");
+  }
+
+  const newContact = await ContactModel.create({ ...req.body, userId: userObjectId });
 
   res.status(201).json({
     status: 201,
@@ -78,44 +67,74 @@ const createContactHandler = async (req, res) => {
   });
 };
 
-// Оновити контакт за ID
+// ======================= GET CONTACT BY ID ==========================
+const getContactByIdHandler = async (req, res) => {
+  const { contactId } = req.params;
+  const { _id: userId } = req.user;
+
+  // Перевірка ID контактів і userId
+  if (!mongoose.Types.ObjectId.isValid(contactId) || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw createError(400, "Invalid contact ID or user ID format");
+  }
+
+  const contact = await ContactModel.findOne({
+    _id: mongoose.Types.ObjectId(contactId),
+    userId: mongoose.Types.ObjectId(userId),
+  });
+
+  if (!contact) throw createError(404, "Contact not found");
+
+  res.status(200).json({
+    status: 200,
+    message: "Successfully retrieved contact",
+    data: contact,
+  });
+};
+
+// ======================= UPDATE CONTACT ==========================
 const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const { _id: userId } = req.user;
 
+  if (!mongoose.Types.ObjectId.isValid(contactId) || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw createError(400, "Invalid contact ID or user ID format");
+  }
+
   const updatedContact = await ContactModel.findOneAndUpdate(
-    { _id: contactId, userId }, 
+    { _id: mongoose.Types.ObjectId(contactId), userId: mongoose.Types.ObjectId(userId) },
     req.body,
-    { new: true } 
+    { new: true, runValidators: true }
   );
-  if (!updatedContact) throw createHttpError(404, "Contact not found");
+  if (!updatedContact) throw createError(404, "Contact not found");
 
   res.status(200).json({
     status: 200,
-    message: `Successfully updated contact with ID ${contactId}`,
+    message: "Successfully updated contact",
     data: updatedContact,
   });
 };
 
-
-// Видалити контакт за ID
+// ======================= DELETE CONTACT ==========================
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const { _id: userId } = req.user;
 
-  const deletedContact = await ContactModel.findOneAndDelete({
-    _id: contactId, 
-    userId, 
-  });
-  if (!deletedContact) throw createHttpError(404, "Contact not found");
+  if (!mongoose.Types.ObjectId.isValid(contactId) || !mongoose.Types.ObjectId.isValid(userId)) {
+    throw createError(400, "Invalid contact ID or user ID format");
+  }
 
-  res.status(204).send(); 
+  const deletedContact = await ContactModel.findOneAndDelete({
+    _id: mongoose.Types.ObjectId(contactId),
+    userId: mongoose.Types.ObjectId(userId),
+  });
+  if (!deletedContact) throw createError(404, "Contact not found");
+
+  res.status(204).send();
 };
 
-
-// Експорт
+// ======================= EXPORT HANDLERS ==========================
 export const getAllContacts = ctrlWrapper(getAllContactsHandler);
-export const getContactById = ctrlWrapper(getContactByIdHandler);
 export const createContact = ctrlWrapper(createContactHandler);
+export const getContactById = ctrlWrapper(getContactByIdHandler);
 export const updateContact = ctrlWrapper(updateContactHandler);
 export const deleteContact = ctrlWrapper(deleteContactHandler);

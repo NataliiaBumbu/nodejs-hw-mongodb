@@ -5,13 +5,14 @@ import UserModel from '../models/User.js';
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
+
     if (!authHeader) {
       throw createHttpError(401, 'Authorization header is missing');
     }
 
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      throw createHttpError(401, 'Bearer token is missing');
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) {
+      throw createHttpError(401, 'Bearer token is missing or malformed');
     }
 
     let decoded;
@@ -29,7 +30,9 @@ const authenticate = async (req, res, next) => {
       throw createHttpError(401, 'User not found');
     }
 
-    req.user = user; 
+    // Передаємо user._id як є
+    req.user = { _id: user._id };
+
     next();
   } catch (error) {
     next(error);
