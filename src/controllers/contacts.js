@@ -5,53 +5,31 @@ import ctrlWrapper from '../utils/ctrlWrapper.js';
 
 // ======================= GET ALL CONTACTS ==========================
 const getAllContactsHandler = async (req, res) => {
-  const { _id: userId } = req.user;
-
-  // Перевірка валідності userId
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    console.log("Invalid user ID:", userId);
-    return res.status(400).json({ message: "Invalid user ID format" });
-  }
-
   try {
-    // Перевірка наявності контактів із userId
-    const filter = { userId };
-    console.log("Applying filter:", filter);
-
-    const contacts = await ContactModel.find(filter);
-    console.log("Contacts found:", contacts);
-
+    const userId = req.user._id; // Отримуємо userId з req.user
+    const contacts = await ContactModel.find({ userId });  // Додаємо фільтрацію за userId
     res.status(200).json({
       status: 200,
       message: "Successfully retrieved all contacts",
-      data: {
-        contacts,
-        totalItems: contacts.length,
-      },
+      data: { contacts, totalItems: contacts.length },
     });
   } catch (error) {
     console.error("Error retrieving contacts:", error.message);
-    res.status(500).json({ message: "Failed to retrieve contacts" });
+    throw createError(500, "Failed to retrieve contacts");
   }
 };
 
 // ======================= CREATE CONTACT ==========================
 const createContactHandler = async (req, res) => {
-  const { _id: userId } = req.user;
   const { name, phoneNumber, contactType } = req.body;
+  const userId = req.user._id; // Отримуємо userId з req.user
 
   if (!name || !phoneNumber || !contactType) {
-    throw createError(400, "Name, phoneNumber, and contactType are required.");
+    return res.status(400).json({ message: "Name, phoneNumber, and contactType are required." });
   }
 
   try {
-    const newContact = await ContactModel.create({
-      name,
-      phoneNumber,
-      contactType,
-      userId,
-    });
-
+    const newContact = await ContactModel.create({ name, phoneNumber, contactType, userId });
     res.status(201).json({
       status: 201,
       message: "Contact created successfully",
@@ -66,15 +44,15 @@ const createContactHandler = async (req, res) => {
 // ======================= GET CONTACT BY ID ==========================
 const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const userId = req.user._id; // Отримуємо userId з req.user
 
-  if (!mongoose.Types.ObjectId.isValid(contactId)) {
-    throw createError(400, "Invalid contact ID");
+  if (!mongoose.isValidObjectId(contactId)) {
+    return res.status(400).json({ message: "Invalid contact ID" });
   }
 
   try {
-    const contact = await ContactModel.findOne({ _id: contactId, userId });
-    if (!contact) throw createError(404, "Contact not found");
+    const contact = await ContactModel.findOne({ _id: contactId, userId });  // Додаємо фільтрацію за userId
+    if (!contact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(200).json({
       status: 200,
@@ -82,7 +60,7 @@ const getContactByIdHandler = async (req, res) => {
       data: contact,
     });
   } catch (error) {
-    console.error("Error fetching contact:", error.message);
+    console.error("Error retrieving contact:", error.message);
     throw createError(500, "Failed to retrieve contact");
   }
 };
@@ -90,20 +68,20 @@ const getContactByIdHandler = async (req, res) => {
 // ======================= UPDATE CONTACT ==========================
 const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const userId = req.user._id; // Отримуємо userId з req.user
 
-  if (!mongoose.Types.ObjectId.isValid(contactId)) {
-    throw createError(400, "Invalid contact ID");
+  if (!mongoose.isValidObjectId(contactId)) {
+    return res.status(400).json({ message: "Invalid contact ID" });
   }
 
   try {
     const updatedContact = await ContactModel.findOneAndUpdate(
-      { _id: contactId, userId },
+      { _id: contactId, userId }, // Додаємо фільтрацію за userId
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!updatedContact) throw createError(404, "Contact not found");
+    if (!updatedContact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(200).json({
       status: 200,
@@ -119,15 +97,15 @@ const updateContactHandler = async (req, res) => {
 // ======================= DELETE CONTACT ==========================
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const { _id: userId } = req.user;
+  const userId = req.user._id; // Отримуємо userId з req.user
 
-  if (!mongoose.Types.ObjectId.isValid(contactId)) {
-    throw createError(400, "Invalid contact ID");
+  if (!mongoose.isValidObjectId(contactId)) {
+    return res.status(400).json({ message: "Invalid contact ID" });
   }
 
   try {
-    const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId });
-    if (!deletedContact) throw createError(404, "Contact not found");
+    const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId });  // Додаємо фільтрацію за userId
+    if (!deletedContact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(204).send();
   } catch (error) {
