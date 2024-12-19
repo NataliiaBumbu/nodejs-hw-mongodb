@@ -1,17 +1,24 @@
-import ContactModel from '../models/contact.js'; 
-import mongoose from 'mongoose';
 import createError from 'http-errors';
+import mongoose from 'mongoose';
+import ContactModel from '../models/contact.js';
 
 // Отримати всі контакти
-export const getContacts = async () => {
-  return ContactModel.find(); // Не потрібен `await`, якщо ви передаєте promise далі
+export const getContacts = async (userId, page, limit) => {
+  const skip = (page - 1) * limit;
+  const contacts = await ContactModel.find({ userId })
+    .skip(skip)
+    .limit(limit);
+
+  const totalItems = await ContactModel.countDocuments({ userId });
+
+  return { contacts, totalItems };
 };
 
 // Отримати контакт за ID
-export const getContactById = async (contactId) => {
+export const getContactById = async (contactId, userId) => {
   validateObjectId(contactId);
 
-  const contact = await ContactModel.findById(contactId);
+  const contact = await ContactModel.findOne({ _id: contactId, userId });
   if (!contact) throw createError(404, 'Contact not found');
 
   return contact;
@@ -19,22 +26,26 @@ export const getContactById = async (contactId) => {
 
 // Створити новий контакт
 export const createContact = async (data) => {
-  const { name, phoneNumber, contactType } = data;
+  const { name, phoneNumber, contactType, userId } = data;
   if (!name || !phoneNumber || !contactType) {
     throw createError(400, 'Name, phoneNumber, and contactType are required fields.');
   }
 
-  return ContactModel.create(data);
+  return ContactModel.create({ name, phoneNumber, contactType, userId });
 };
 
 // Оновити контакт за ID
-export const updateContact = async (contactId, data) => {
+export const updateContact = async (contactId, userId, data) => {
   validateObjectId(contactId);
 
-  const updatedContact = await ContactModel.findByIdAndUpdate(contactId, data, {
-    new: true, // Повернути оновлений документ
-    runValidators: true, // Запустити валідацію моделі
-  });
+  const updatedContact = await ContactModel.findOneAndUpdate(
+    { _id: contactId, userId },
+    data,
+    {
+      new: true, 
+      runValidators: true, 
+    }
+  );
 
   if (!updatedContact) throw createError(404, 'Contact not found');
 
@@ -42,10 +53,10 @@ export const updateContact = async (contactId, data) => {
 };
 
 // Видалити контакт за ID
-export const deleteContact = async (contactId) => {
+export const deleteContact = async (contactId, userId) => {
   validateObjectId(contactId);
 
-  const deletedContact = await ContactModel.findByIdAndDelete(contactId);
+  const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId });
   if (!deletedContact) throw createError(404, 'Contact not found');
 
   return deletedContact;

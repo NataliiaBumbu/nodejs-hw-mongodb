@@ -3,15 +3,39 @@ import mongoose from 'mongoose';
 import ContactModel from '../models/contact.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js';
 
-// ======================= GET ALL CONTACTS ==========================
+// ======================= GET ALL CONTACTS (WITH PAGINATION) ==========================
 const getAllContactsHandler = async (req, res) => {
   try {
-    const userId = req.user._id; // Отримуємо userId з req.user
-    const contacts = await ContactModel.find({ userId });  // Додаємо фільтрацію за userId
+    const userId = req.user._id; 
+
+    // Отримуємо параметри пагінації
+    const { page = 1, limit = 10 } = req.query;
+    const pageNumber = parseInt(page, 10);
+    const pageSize = parseInt(limit, 10);
+
+    if (pageNumber < 1 || pageSize < 1) {
+      return res.status(400).json({ message: "Page and limit must be positive integers." });
+    }
+
+    const skip = (pageNumber - 1) * pageSize; 
+
+    // Знаходимо контакти з урахуванням пагінації
+    const contacts = await ContactModel.find({ userId })
+      .skip(skip)
+      .limit(pageSize);
+
+    // Підраховуємо загальну кількість контактів
+    const totalItems = await ContactModel.countDocuments({ userId });
+
     res.status(200).json({
       status: 200,
-      message: "Successfully retrieved all contacts",
-      data: { contacts, totalItems: contacts.length },
+      message: "Successfully retrieved contacts",
+      data: {
+        contacts,
+        totalItems,
+        page: pageNumber,
+        totalPages: Math.ceil(totalItems / pageSize),
+      },
     });
   } catch (error) {
     console.error("Error retrieving contacts:", error.message);
@@ -22,7 +46,7 @@ const getAllContactsHandler = async (req, res) => {
 // ======================= CREATE CONTACT ==========================
 const createContactHandler = async (req, res) => {
   const { name, phoneNumber, contactType } = req.body;
-  const userId = req.user._id; // Отримуємо userId з req.user
+  const userId = req.user._id; 
 
   if (!name || !phoneNumber || !contactType) {
     return res.status(400).json({ message: "Name, phoneNumber, and contactType are required." });
@@ -44,14 +68,14 @@ const createContactHandler = async (req, res) => {
 // ======================= GET CONTACT BY ID ==========================
 const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; // Отримуємо userId з req.user
+  const userId = req.user._id; 
 
   if (!mongoose.isValidObjectId(contactId)) {
     return res.status(400).json({ message: "Invalid contact ID" });
   }
 
   try {
-    const contact = await ContactModel.findOne({ _id: contactId, userId });  // Додаємо фільтрацію за userId
+    const contact = await ContactModel.findOne({ _id: contactId, userId }); 
     if (!contact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(200).json({
@@ -68,7 +92,7 @@ const getContactByIdHandler = async (req, res) => {
 // ======================= UPDATE CONTACT ==========================
 const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; // Отримуємо userId з req.user
+  const userId = req.user._id; 
 
   if (!mongoose.isValidObjectId(contactId)) {
     return res.status(400).json({ message: "Invalid contact ID" });
@@ -76,7 +100,7 @@ const updateContactHandler = async (req, res) => {
 
   try {
     const updatedContact = await ContactModel.findOneAndUpdate(
-      { _id: contactId, userId }, // Додаємо фільтрацію за userId
+      { _id: contactId, userId }, 
       req.body,
       { new: true, runValidators: true }
     );
@@ -97,14 +121,14 @@ const updateContactHandler = async (req, res) => {
 // ======================= DELETE CONTACT ==========================
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; // Отримуємо userId з req.user
+  const userId = req.user._id; 
 
   if (!mongoose.isValidObjectId(contactId)) {
     return res.status(400).json({ message: "Invalid contact ID" });
   }
 
   try {
-    const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId });  // Додаємо фільтрацію за userId
+    const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId }); // Додаємо фільтрацію за userId
     if (!deletedContact) return res.status(404).json({ message: "Contact not found" });
 
     res.status(204).send();

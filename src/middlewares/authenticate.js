@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import createHttpError from 'http-errors';
-import UserModel from '../models/User.js'; 
+import UserModel from '../models/User.js';
 
 const authenticate = async (req, res, next) => {
   try {
@@ -17,15 +17,15 @@ const authenticate = async (req, res, next) => {
     }
 
     // Верифікуємо токен за допомогою секретного ключа
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET); 
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        throw createHttpError(401, 'Access token expired'); 
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        if (err.name === 'TokenExpiredError') {
+          throw createHttpError(401, 'Access token expired');
+        }
+        throw createHttpError(401, 'Invalid access token');
       }
-      throw createHttpError(401, 'Invalid access token'); 
-    }
+      return decoded;
+    });
 
     // Знаходимо користувача за userId з токену
     const user = await UserModel.findById(decoded.userId);
