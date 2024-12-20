@@ -1,32 +1,46 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import cors from 'cors';
-import pino from 'pino';
-import contactsRouter from './routes/contacts.js'; 
+import initMongoConnection from './db/initMongoConnection.js';
+import contactsRouter from './routers/contacts.js';
+import authRouter from './routers/auth.js'; 
+import notFoundHandler from './middlewares/notFoundHandler.js';
+import errorHandler from './middlewares/errorHandler.js';
+import cookieParser from 'cookie-parser';
 
-function setupServer() {
-  const app = express();
-  const logger = pino();
+dotenv.config();
 
-  app.use(cors());
-  app.use(express.json());
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
 
-  app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
-    next();
-  });
+// Підключення маршрутів
+app.use('/auth', authRouter); // Авторизація та реєстрація
+app.use('/contacts', contactsRouter); // Робота з контактами
 
-  app.use('/contacts', contactsRouter);
+// Middleware для обробки 404
+app.use(notFoundHandler);
 
-  app.use((req, res) => {
-    res.status(404).json({
-      message: 'Not found',
+// Middleware для обробки помилок
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5080;
+
+async function startServer() {
+  try {
+    console.log('Starting the server...');
+    await initMongoConnection();
+    console.log('MongoDB connection established!');
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
-  });
-
-  const PORT = process.env.PORT || 4001;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+  } catch (error) {
+    console.error('Failed to start the server:', error.message);
+  }
 }
 
-export default setupServer;
+startServer();
+
+export default startServer;
