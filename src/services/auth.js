@@ -4,10 +4,24 @@ import createHttpError from 'http-errors';
 import UserModel from '../models/User.js';
 import SessionModel from '../models/Session.js';
 
+// Хелпер для створення токенів
+const generateTokens = (userId) => {
+  const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: '15m',
+  });
+
+  const refreshToken = jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '30d',
+  });
+
+  return { accessToken, refreshToken };
+};
+
 // Створення нового користувача
 export const createUserService = async ({ name, email, password }) => {
-  if (await UserModel.findOne({ email })) {
-    throw createHttpError(409, 'Email in use');
+  const existingUser = await UserModel.findOne({ email });
+  if (existingUser) {
+    throw createHttpError(409, 'Email is already in use');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -21,32 +35,19 @@ export const loginUserService = async ({ email, password }) => {
     throw createHttpError(401, 'Invalid email or password');
   }
 
-  const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: '15m',
-  });
+  const { accessToken, refreshToken } = generateTokens(user._id);
 
-  const refreshToken = jwt.sign({ userId: user._id }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: '30d',
-  });
-
-  // Видалення існуючої сесії
-  await SessionModel.findOneAndDelete({ userId: user._id });
-
-  // Створення нової сесії
-  try {
-    await SessionModel.create({
-      userId: user._id,
+  // Оновлення сесії
+  await SessionModel.findOneAndUpdate(
+    { userId: user._id },
+    {
       accessToken,
       refreshToken,
       accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
       refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      throw createHttpError(409, 'Duplicate session error');
-    }
-    throw error;
-  }
+    },
+    { upsert: true, new: true }
+  );
 
   return { accessToken, refreshToken };
 };
@@ -72,37 +73,24 @@ export const refreshSessionService = async (refreshToken) => {
     throw createHttpError(401, 'Session not found');
   }
 
-  const accessToken = jwt.sign({ userId: decoded.userId }, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: '15m',
-  });
+  const { accessToken, refreshToken: newRefreshToken } = generateTokens(decoded.userId);
 
-  const newRefreshToken = jwt.sign({ userId: decoded.userId }, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: '30d',
-  });
-
-  // Видалення старої сесії
-  await SessionModel.findOneAndDelete({ refreshToken });
-
-  // Створення нової сесії
-  try {
-    await SessionModel.create({
-      userId: decoded.userId,
-      accessToken,
-      refreshToken: newRefreshToken,
-      accessTokenValidUntil: Date.now() + 15 * 60 * 1000,
-      refreshTokenValidUntil: Date.now() + 30 * 24 * 60 * 60 * 1000,
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      throw createHttpError(409, 'Duplicate session error');
-    }
-    throw error;
-  }
+  // Оновлення сесії
+  session.accessToken = accessToken;
+  session.refreshToken = newRefreshToken;
+  session.accessTokenValidUntil = Date.now() + 15 * 60 * 1000;
+  session.refreshTokenValidUntil = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  await session.save();
 
   return { accessToken, refreshToken: newRefreshToken };
 };
 
-// Видалення сесії
+export const isTokenBlacklisted = async (token) => {
+  const session = await SessionModel.findOne({ accessToken: token });
+  return !session; 
+};
+
+// Логаут користувача
 export const logoutUserService = async (refreshToken) => {
   if (!refreshToken) {
     throw createHttpError(401, 'Refresh token is missing');
@@ -112,4 +100,6 @@ export const logoutUserService = async (refreshToken) => {
   if (!session) {
     throw createHttpError(401, 'Session not found');
   }
+
+  console.log('Session deleted successfully');
 };

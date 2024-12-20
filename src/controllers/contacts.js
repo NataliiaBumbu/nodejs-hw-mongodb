@@ -1,141 +1,92 @@
 import createError from 'http-errors';
-import mongoose from 'mongoose';
-import ContactModel from '../models/contact.js';
+import * as contactService from '../services/contacts.js'; 
 import ctrlWrapper from '../utils/ctrlWrapper.js';
 
-// ======================= GET ALL CONTACTS (WITH PAGINATION) ==========================
+// ======================= GET ALL CONTACTS ==========================
 const getAllContactsHandler = async (req, res) => {
-  try {
-    const userId = req.user._id; 
+  const userId = req.user._id; 
+  const { page = 1, perPage = 10 } = req.query; 
+  const pageNumber = parseInt(page, 10);
+  const pageSize = parseInt(perPage, 10);
 
-    // Отримуємо параметри пагінації
-    const { page = 1, limit = 10 } = req.query;
-    const pageNumber = parseInt(page, 10);
-    const pageSize = parseInt(limit, 10);
-
-    if (pageNumber < 1 || pageSize < 1) {
-      return res.status(400).json({ message: "Page and limit must be positive integers." });
-    }
-
-    const skip = (pageNumber - 1) * pageSize; 
-
-    // Знаходимо контакти з урахуванням пагінації
-    const contacts = await ContactModel.find({ userId })
-      .skip(skip)
-      .limit(pageSize);
-
-    // Підраховуємо загальну кількість контактів
-    const totalItems = await ContactModel.countDocuments({ userId });
-
-    res.status(200).json({
-      status: 200,
-      message: "Successfully retrieved contacts",
-      data: {
-        contacts,
-        totalItems,
-        page: pageNumber,
-        totalPages: Math.ceil(totalItems / pageSize),
-      },
-    });
-  } catch (error) {
-    console.error("Error retrieving contacts:", error.message);
-    throw createError(500, "Failed to retrieve contacts");
+  if (pageNumber < 1 || pageSize < 1) {
+    throw createError(400, 'Page and perPage must be positive integers.');
   }
+
+  const { contacts, totalItems } = await contactService.getContacts(userId, pageNumber, pageSize);
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Successfully retrieved contacts',
+    data: {
+      contacts,
+      page: pageNumber,
+      perPage: pageSize,
+      totalItems,
+      totalPages,
+      hasPreviousPage: pageNumber > 1,
+      hasNextPage: pageNumber < totalPages,
+    },
+  });
 };
 
 // ======================= CREATE CONTACT ==========================
 const createContactHandler = async (req, res) => {
+  const userId = req.user._id;
   const { name, phoneNumber, contactType } = req.body;
-  const userId = req.user._id; 
 
-  if (!name || !phoneNumber || !contactType) {
-    return res.status(400).json({ message: "Name, phoneNumber, and contactType are required." });
-  }
+  const newContact = await contactService.createContact({
+    name,
+    phoneNumber,
+    contactType,
+    userId,
+  });
 
-  try {
-    const newContact = await ContactModel.create({ name, phoneNumber, contactType, userId });
-    res.status(201).json({
-      status: 201,
-      message: "Contact created successfully",
-      data: newContact,
-    });
-  } catch (error) {
-    console.error("Error creating contact:", error.message);
-    throw createError(500, "Failed to create contact");
-  }
+  res.status(201).json({
+    status: 201,
+    message: 'Contact created successfully',
+    data: newContact,
+  });
 };
 
 // ======================= GET CONTACT BY ID ==========================
 const getContactByIdHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; 
+  const userId = req.user._id;
 
-  if (!mongoose.isValidObjectId(contactId)) {
-    return res.status(400).json({ message: "Invalid contact ID" });
-  }
+  const contact = await contactService.getContactById(contactId, userId);
 
-  try {
-    const contact = await ContactModel.findOne({ _id: contactId, userId }); 
-    if (!contact) return res.status(404).json({ message: "Contact not found" });
-
-    res.status(200).json({
-      status: 200,
-      message: "Contact retrieved successfully",
-      data: contact,
-    });
-  } catch (error) {
-    console.error("Error retrieving contact:", error.message);
-    throw createError(500, "Failed to retrieve contact");
-  }
+  res.status(200).json({
+    status: 200,
+    message: 'Contact retrieved successfully',
+    data: contact,
+  });
 };
 
 // ======================= UPDATE CONTACT ==========================
 const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; 
+  const userId = req.user._id;
+  const updateData = req.body;
 
-  if (!mongoose.isValidObjectId(contactId)) {
-    return res.status(400).json({ message: "Invalid contact ID" });
-  }
+  const updatedContact = await contactService.updateContact(contactId, userId, updateData);
 
-  try {
-    const updatedContact = await ContactModel.findOneAndUpdate(
-      { _id: contactId, userId }, 
-      req.body,
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedContact) return res.status(404).json({ message: "Contact not found" });
-
-    res.status(200).json({
-      status: 200,
-      message: "Contact updated successfully",
-      data: updatedContact,
-    });
-  } catch (error) {
-    console.error("Error updating contact:", error.message);
-    throw createError(500, "Failed to update contact");
-  }
+  res.status(200).json({
+    status: 200,
+    message: 'Contact updated successfully',
+    data: updatedContact,
+  });
 };
 
 // ======================= DELETE CONTACT ==========================
 const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
-  const userId = req.user._id; 
+  const userId = req.user._id;
 
-  if (!mongoose.isValidObjectId(contactId)) {
-    return res.status(400).json({ message: "Invalid contact ID" });
-  }
+  await contactService.deleteContact(contactId, userId);
 
-  try {
-    const deletedContact = await ContactModel.findOneAndDelete({ _id: contactId, userId }); // Додаємо фільтрацію за userId
-    if (!deletedContact) return res.status(404).json({ message: "Contact not found" });
-
-    res.status(204).send();
-  } catch (error) {
-    console.error("Error deleting contact:", error.message);
-    throw createError(500, "Failed to delete contact");
-  }
+  res.status(204).send();
 };
 
 // ======================= EXPORT HANDLERS ==========================

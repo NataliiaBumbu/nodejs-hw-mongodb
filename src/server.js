@@ -25,7 +25,7 @@ app.use(notFoundHandler);
 // Middleware для обробки помилок
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 6050;
+const PORT = process.env.PORT || 5080;
 
 async function startServer() {
   try {
