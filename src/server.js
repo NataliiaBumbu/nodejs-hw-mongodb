@@ -1,5 +1,8 @@
-import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
+console.log('JWT_SECRET:', process.env.JWT_SECRET);
+
+import express from 'express';
 import cors from 'cors';
 import initMongoConnection from './db/initMongoConnection.js';
 import contactsRouter from './routers/contacts.js';
@@ -8,7 +11,7 @@ import notFoundHandler from './middlewares/notFoundHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 import cookieParser from 'cookie-parser';
 
-dotenv.config();
+
 
 const app = express();
 app.use(cors());
@@ -25,7 +28,7 @@ app.use(notFoundHandler);
 // Middleware для обробки помилок
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5080;
+const PORT = process.env.PORT || 3003;
 
 async function startServer() {
   try {

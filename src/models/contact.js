@@ -8,6 +8,7 @@ const contactSchema = new mongoose.Schema(
     isFavourite: { type: Boolean, default: false }, 
     contactType: { type: String, required: true }, 
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    photo: { type: String,  default: null },
   },
   { timestamps: true } 
 );

@@ -32,22 +32,32 @@ const getAllContactsHandler = async (req, res) => {
 };
 
 // ======================= CREATE CONTACT ==========================
-const createContactHandler = async (req, res) => {
-  const userId = req.user._id;
-  const { name, phoneNumber, contactType } = req.body;
+const createContactHandler = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const { name, phoneNumber, contactType } = req.body;
+    const { path: photoPath } = req.file || {}; // Отримуємо посилання на фото, якщо є
 
-  const newContact = await contactService.createContact({
-    name,
-    phoneNumber,
-    contactType,
-    userId,
-  });
+    const newContact = await contactService.createContact({
+      name,
+      phoneNumber,
+      contactType,
+      userId,
+      photo: photoPath || null, // Зберігаємо посилання на фото
+    });
 
-  res.status(201).json({
-    status: 201,
-    message: 'Contact created successfully',
-    data: newContact,
-  });
+    res.status(201).json({
+      status: 201,
+      message: 'Contact created successfully',
+      data: newContact,
+    });
+  } catch (error) {
+    console.error('Error in createContactHandler:', error.message); // Лог для діагностики
+    res.status(500).json({
+      status: 500,
+      message: error.message || 'Something went wrong',
+    });
+  }
 };
 
 // ======================= GET CONTACT BY ID ==========================
@@ -69,6 +79,11 @@ const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
   const updateData = req.body;
+  const { path: photoPath } = req.file || {}; // Отримуємо нове фото, якщо воно є
+
+  if (photoPath) {
+    updateData.photo = photoPath; // Додаємо нове фото до даних
+  }
 
   const updatedContact = await contactService.updateContact(contactId, userId, updateData);
 

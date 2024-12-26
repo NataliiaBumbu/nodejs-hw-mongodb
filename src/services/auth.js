@@ -18,7 +18,7 @@ const generateTokens = (userId) => {
 };
 
 // Створення нового користувача
-export const createUserService = async ({ name, email, password }) => {
+export const registerUserService = async ({ name, email, password }) => {
   const existingUser = await UserModel.findOne({ email });
   if (existingUser) {
     throw createHttpError(409, 'Email is already in use');
@@ -85,9 +85,10 @@ export const refreshSessionService = async (refreshToken) => {
   return { accessToken, refreshToken: newRefreshToken };
 };
 
+// Перевірка токену на чорний список
 export const isTokenBlacklisted = async (token) => {
   const session = await SessionModel.findOne({ accessToken: token });
-  return !session; 
+  return !session;
 };
 
 // Логаут користувача
@@ -102,4 +103,40 @@ export const logoutUserService = async (refreshToken) => {
   }
 
   console.log('Session deleted successfully');
+};
+
+// Скидання пароля
+export const resetPasswordService = async (token, newPassword) => {
+  if (!token || !newPassword) {
+    throw createHttpError(400, 'Token and new password are required');
+  }
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (error) {
+    throw createHttpError(401, 'Invalid or expired reset token');
+  }
+
+  const user = await UserModel.findOne({ email: decoded.email });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.sessions = []; // Завжди очищаємо сесії при зміні пароля
+  await user.save();
+
+  return 'Password has been successfully reset';
+};
+
+// Генерація токену для скидання пароля
+export const generateResetPasswordToken = async (email) => {
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  const resetToken = jwt.sign({ email }, process.env.RESET_PASSWORD_SECRET, { expiresIn: '1h' });
+  return resetToken;
 };
