@@ -137,6 +137,6 @@ export const generateResetPasswordToken = async (email) => {
     throw createHttpError(404, 'User not found');
   }
 
-  const resetToken = jwt.sign({ email }, process.env.RESET_PASSWORD_SECRET, { expiresIn: '1h' });
+  const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
   return resetToken;
 };
