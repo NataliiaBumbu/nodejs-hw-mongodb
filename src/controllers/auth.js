@@ -124,9 +124,9 @@ export const sendResetEmail = async (req, res, next) => {
 // Скидання пароля
 export const resetPassword = async (req, res, next) => {
   try {
-    const { token, newPassword } = req.body;
+    const { token, password } = req.body;
 
-    await resetPasswordService(token, newPassword);
+    await resetPasswordService(token, password);
 
     res.status(200).json({
       status: 200,

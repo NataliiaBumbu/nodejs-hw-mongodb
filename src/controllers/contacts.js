@@ -1,11 +1,11 @@
 import createError from 'http-errors';
-import * as contactService from '../services/contacts.js'; 
+import * as contactService from '../services/contacts.js';
 import ctrlWrapper from '../utils/ctrlWrapper.js';
 
 // ======================= GET ALL CONTACTS ==========================
 const getAllContactsHandler = async (req, res) => {
-  const userId = req.user._id; 
-  const { page = 1, perPage = 10 } = req.query; 
+  const userId = req.user._id;
+  const { page = 1, perPage = 10 } = req.query;
   const pageNumber = parseInt(page, 10);
   const pageSize = parseInt(perPage, 10);
 
@@ -32,32 +32,28 @@ const getAllContactsHandler = async (req, res) => {
 };
 
 // ======================= CREATE CONTACT ==========================
-const createContactHandler = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const { name, phoneNumber, contactType } = req.body;
-    const { path: photoPath } = req.file || {}; // Отримуємо посилання на фото, якщо є
+const createContactHandler = async (req, res) => {
+  const userId = req.user._id;
+  const { name, phoneNumber, contactType } = req.body;
+  const photoUrl = req.file?.path || null; // Отримуємо посилання на фото, якщо є
 
-    const newContact = await contactService.createContact({
-      name,
-      phoneNumber,
-      contactType,
-      userId,
-      photo: photoPath || null, // Зберігаємо посилання на фото
-    });
-
-    res.status(201).json({
-      status: 201,
-      message: 'Contact created successfully',
-      data: newContact,
-    });
-  } catch (error) {
-    console.error('Error in createContactHandler:', error.message); // Лог для діагностики
-    res.status(500).json({
-      status: 500,
-      message: error.message || 'Something went wrong',
-    });
+  if (!name || !phoneNumber || !contactType) {
+    throw createError(400, 'Name, phoneNumber, and contactType are required fields.');
   }
+
+  const newContact = await contactService.createContact({
+    name,
+    phoneNumber,
+    contactType,
+    userId,
+    photo: photoUrl,
+  });
+
+  res.status(201).json({
+    status: 201,
+    message: 'Contact created successfully',
+    data: newContact,
+  });
 };
 
 // ======================= GET CONTACT BY ID ==========================
@@ -66,6 +62,10 @@ const getContactByIdHandler = async (req, res) => {
   const userId = req.user._id;
 
   const contact = await contactService.getContactById(contactId, userId);
+
+  if (!contact) {
+    throw createError(404, 'Contact not found');
+  }
 
   res.status(200).json({
     status: 200,
@@ -79,13 +79,17 @@ const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
   const updateData = req.body;
-  const { path: photoPath } = req.file || {}; // Отримуємо нове фото, якщо воно є
+  const photoUrl = req.file?.path || null; // Отримуємо нове фото, якщо воно є
 
-  if (photoPath) {
-    updateData.photo = photoPath; // Додаємо нове фото до даних
+  if (photoUrl) {
+    updateData.photo = photoUrl;
   }
 
   const updatedContact = await contactService.updateContact(contactId, userId, updateData);
+
+  if (!updatedContact) {
+    throw createError(404, 'Contact not found');
+  }
 
   res.status(200).json({
     status: 200,
@@ -99,7 +103,11 @@ const deleteContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
 
-  await contactService.deleteContact(contactId, userId);
+  const deletedContact = await contactService.deleteContact(contactId, userId);
+
+  if (!deletedContact) {
+    throw createError(404, 'Contact not found');
+  }
 
   res.status(204).send();
 };

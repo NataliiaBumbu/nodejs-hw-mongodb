@@ -106,8 +106,8 @@ export const logoutUserService = async (refreshToken) => {
 };
 
 // Скидання пароля
-export const resetPasswordService = async (token, newPassword) => {
-  if (!token || !newPassword) {
+export const resetPasswordService = async (token, password) => {
+  if (!token || !password) {
     throw createHttpError(400, 'Token and new password are required');
   }
 
@@ -123,7 +123,7 @@ export const resetPasswordService = async (token, newPassword) => {
     throw createHttpError(404, 'User not found');
   }
 
-  user.password = await bcrypt.hash(newPassword, 10);
+  user.password = await bcrypt.hash(password, 10);
   user.sessions = []; // Завжди очищаємо сесії при зміні пароля
   await user.save();
 
