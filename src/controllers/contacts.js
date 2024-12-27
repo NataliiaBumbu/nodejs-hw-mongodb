@@ -32,28 +32,33 @@ const getAllContactsHandler = async (req, res) => {
 };
 
 // ======================= CREATE CONTACT ==========================
-const createContactHandler = async (req, res) => {
-  const userId = req.user._id;
-  const { name, phoneNumber, contactType } = req.body;
-  const photoUrl = req.file?.path || null; // Отримуємо посилання на фото, якщо є
+const createContactHandler = async (req, res, next) => {
+  try {
+    console.log('Request Body:', req.body);
+    console.log('Uploaded File:', req.file);
 
-  if (!name || !phoneNumber || !contactType) {
-    throw createError(400, 'Name, phoneNumber, and contactType are required fields.');
+    const userId = req.user._id;
+    const { name, phoneNumber, contactType } = req.body;
+    const photoUrl = req.file?.path || null; // Отримуємо URL фото з Cloudinary
+
+    // Передаємо URL фото до сервісу
+    const newContact = await contactService.createContact({
+      name,
+      phoneNumber,
+      contactType,
+      userId,
+      photo: photoUrl,
+    });
+
+    res.status(201).json({
+      status: 201,
+      message: 'Contact created successfully',
+      data: newContact,
+    });
+  } catch (error) {
+    console.error('Error in createContactHandler:', error.message);
+    next(error);
   }
-
-  const newContact = await contactService.createContact({
-    name,
-    phoneNumber,
-    contactType,
-    userId,
-    photo: photoUrl,
-  });
-
-  res.status(201).json({
-    status: 201,
-    message: 'Contact created successfully',
-    data: newContact,
-  });
 };
 
 // ======================= GET CONTACT BY ID ==========================

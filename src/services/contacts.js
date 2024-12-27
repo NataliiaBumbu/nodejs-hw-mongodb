@@ -26,12 +26,14 @@ export const getContactById = async (contactId, userId) => {
 
 // Створити новий контакт
 export const createContact = async (data) => {
-  const { name, phoneNumber, contactType, userId } = data;
+  const { name, phoneNumber, contactType, userId, photo } = data;
+
   if (!name || !phoneNumber || !contactType) {
     throw createError(400, 'Name, phoneNumber, and contactType are required fields.');
   }
 
-  return ContactModel.create({ name, phoneNumber, contactType, userId });
+  // Зберігаємо фото разом із контактом
+  return ContactModel.create({ name, phoneNumber, contactType, userId, photo });
 };
 
 // Оновити контакт за ID
