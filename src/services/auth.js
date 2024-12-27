@@ -124,7 +124,7 @@ export const resetPasswordService = async (token, password) => {
   }
 
   user.password = await bcrypt.hash(password, 10);
-  user.sessions = []; // Завжди очищаємо сесії при зміні пароля
+  user.sessions = []; 
   await user.save();
 
   return 'Password has been successfully reset';

@@ -86,7 +86,7 @@ export const logoutUser = async (req, res, next) => {
       throw createHttpError(401, 'Refresh token is missing');
     }
 
-    await logoutUserService(refreshToken); // виправлено на logoutUserService
+    await logoutUserService(refreshToken); 
     res.clearCookie('refreshToken').status(204).send();
   } catch (error) {
     next(error);

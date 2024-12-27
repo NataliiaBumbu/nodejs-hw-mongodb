@@ -84,7 +84,7 @@ const updateContactHandler = async (req, res) => {
   const { contactId } = req.params;
   const userId = req.user._id;
   const updateData = req.body;
-  const photoUrl = req.file?.path || null; // Отримуємо нове фото, якщо воно є
+  const photoUrl = req.file?.path || null; 
 
   if (photoUrl) {
     updateData.photo = photoUrl;

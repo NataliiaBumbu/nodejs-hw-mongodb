@@ -4,7 +4,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 
-// Завантажуємо змінні середовища
+
 dotenv.config();
 
 // Налаштування Cloudinary
