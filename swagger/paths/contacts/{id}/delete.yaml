@@ -1,0 +1,22 @@
+delete:
+  tags:
+    - Contacts
+  summary: Delete a contact by ID
+  operationId: deleteContactById
+  description: Remove a specific contact by its unique identifier.
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: contactId
+      in: path
+      required: true
+      description: The unique ID of the contact
+      schema:
+        type: string
+  responses:
+    '200':
+      description: Contact deleted successfully
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '401':
+      $ref: '#/components/responses/Unauthorized'

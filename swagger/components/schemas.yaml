@@ -1,0 +1,25 @@
+Contact:
+  type: object
+  properties:
+    id:
+      type: string
+      description: Unique identifier for the contact
+    name:
+      type: string
+      description: The name of the contact
+    email:
+      type: string
+      description: The email of the contact
+    phone:
+      type: string
+      description: The phone number of the contact
+Error:
+  type: object
+  properties:
+    message:
+      type: string
+      description: Error message
+    code:
+      type: integer
+      description: Error code
+

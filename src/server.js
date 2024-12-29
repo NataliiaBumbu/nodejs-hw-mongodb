@@ -9,6 +9,7 @@ import authRouter from './routers/auth.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
 import cookieParser from 'cookie-parser';
+import apiDocsRouter from './routers/apiDocs.js';
 
 
 
@@ -16,6 +17,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+// Додати маршрут для API-документації
+app.use('/api-docs', apiDocsRouter);
 
 // Підключення маршрутів
 app.use('/auth', authRouter); // Авторизація та реєстрація

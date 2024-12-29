@@ -1,0 +1,12 @@
+NotFound:
+  description: Entity not found.
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'
+Unauthorized:
+  description: Access token is missing or invalid.
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/Error'

@@ -1,0 +1,35 @@
+patch:
+  tags:
+    - Contacts
+  summary: Update a contact by ID
+  operationId: updateContactById
+  description: Update specific fields of a contact by its unique identifier.
+  security:
+    - bearerAuth: []
+  parameters:
+    - name: contactId
+      in: path
+      required: true
+      description: The unique ID of the contact
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+  responses:
+    '200':
+      description: Contact updated successfully
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '401':
+      $ref: '#/components/responses/Unauthorized'
