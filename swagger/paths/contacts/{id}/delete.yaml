@@ -29,10 +29,18 @@ delete:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              message:
+                type: string
+                example: Contact not found
     '401':
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              message:
+                type: string
+                example: Unauthorized access. Please provide a valid token.

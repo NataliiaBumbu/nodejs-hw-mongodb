@@ -10,7 +10,7 @@ tags:
   - name: Contacts
     description: API for managing contacts
 servers:
-  - url: http://localhost:4002
+  - url: https://nodejs-hw-mongodb-35q8.onrender.com
     description: Local development server
   - url: https://mock.swaggerhub.com/your-username/your-api/1.0.0
     description: Mock server for testing

@@ -3,7 +3,7 @@ patch:
     - Contacts
   summary: Update a contact by ID
   operationId: updateContactById
-  description: Update specific fields of a contact by its unique identifier.
+  description: Update specific fields of a contact by its unique identifier
   security:
     - bearerAuth: []
   parameters:
@@ -22,36 +22,60 @@ patch:
           properties:
             name:
               type: string
-              description: Updated name of the contact
+              description: The new name of the contact
+              example: Jane Doe
             email:
               type: string
-              description: Updated email of the contact
-              format: email
+              description: The new email of the contact
+              example: janedoe@example.com
             phone:
               type: string
-              description: Updated phone number of the contact
+              description: The new phone number of the contact
+              example: +987654321
   responses:
     '200':
       description: Contact updated successfully
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Contact' # Схема оновленого контакту
+            $ref: '#/components/schemas/Contact'
     '400':
-      description: Invalid input - bad request
+      description: Invalid input
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
-    '404':
-      description: Contact not found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              message:
+                type: string
+                example: Invalid input. Check your request body and try again.
     '401':
       description: Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            type: object
+            properties:
+              message:
+                type: string
+                example: Unauthorized access. Please provide a valid token.
+    '404':
+      description: Contact not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Contact not found.
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: An unexpected error occurred. Please try again later.
