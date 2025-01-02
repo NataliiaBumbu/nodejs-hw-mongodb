@@ -2,13 +2,20 @@ NotFound:
   description: Entity not found.
   content:
     application/json:
-      example:
-        message: "Entity not found."
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Entity not found."
 
 Unauthorized:
   description: Access token is missing or invalid.
   content:
     application/json:
-      example:
-        message: "Access token is missing or invalid."
-
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Access token is missing or invalid."
