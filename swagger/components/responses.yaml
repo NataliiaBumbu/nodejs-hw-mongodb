@@ -2,11 +2,13 @@ NotFound:
   description: Entity not found.
   content:
     application/json:
-      schema:
-        $ref: '#/components/schemas/Error'
+      example:
+        message: "Entity not found."
+
 Unauthorized:
   description: Access token is missing or invalid.
   content:
     application/json:
-      schema:
-        $ref: '#/components/schemas/Error'
+      example:
+        message: "Access token is missing or invalid."
+
