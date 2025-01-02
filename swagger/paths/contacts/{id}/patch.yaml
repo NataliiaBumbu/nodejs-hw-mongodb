@@ -38,7 +38,7 @@ patch:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Contact'
+            $ref: './swagger/components/schemas/Contact'
     '400':
       description: Invalid input
       content:

@@ -1,6 +1,4 @@
-paths:
-  /contacts:
-    get:
+get:
       tags:
         - Contacts
       summary: Get a list of contacts
@@ -24,4 +22,4 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Contact'
+                  $ref: './swagger/components/schemas/Contact'
