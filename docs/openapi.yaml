@@ -1,35 +1,156 @@
 openapi: 3.1.0
 info:
   version: 1.0.0
-  title: <назва вашого додатку>
+  title: My Application
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  description: <опис вашого додатку>
+  description: A modern API for managing contacts
 tags:
   - name: Contacts
     description: API for managing contacts
 servers:
   - url: http://localhost:4002
-    description: Local server
+    description: Local development server
+  - url: https://mock.swaggerhub.com/your-username/your-api/1.0.0
+    description: Mock server for testing
 paths:
   /contacts:
     get:
-      $ref: './swagger/paths/contacts/get.yaml'
+      tags: [Contacts]
+      summary: Get a list of contacts
+      operationId: getContacts
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema: { type: integer }
+        - name: limit
+          in: query
+          description: Number of contacts per page
+          schema: { type: integer }
+      responses:
+        200:
+          description: List of contacts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+        500:
+          description: Internal server error
     post:
-      $ref: './swagger/paths/contacts/post.yaml'
+      tags: [Contacts]
+      summary: Create a new contact
+      operationId: createContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Contact'
+      responses:
+        201:
+          description: Contact created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        400:
+          description: Bad request
+        500:
+          description: Internal server error
   /contacts/{contactId}:
     get:
-      $ref: './swagger/paths/contacts/{id}/get.yaml'
+      tags: [Contacts]
+      summary: Get a contact by ID
+      operationId: getContactById
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Contact retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contact'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Internal server error
     patch:
-      $ref: './swagger/paths/contacts/{id}/patch.yaml'
+      tags: [Contacts]
+      summary: Update a contact by ID
+      operationId: updateContactById
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                phone: { type: string }
+      responses:
+        200:
+          description: Contact updated successfully
+        404:
+          $ref: '#/components/responses/NotFound'
+        401:
+          $ref: '#/components/responses/Unauthorized'
     delete:
-      $ref: './swagger/paths/contacts/{id}/delete.yaml'
+      tags: [Contacts]
+      summary: Delete a contact by ID
+      operationId: deleteContactById
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Contact deleted successfully
+        404:
+          $ref: '#/components/responses/NotFound'
+        401:
+          $ref: '#/components/responses/Unauthorized'
 components:
   schemas:
-    $ref: './swagger/components/schemas.yaml'
+    Contact:
+      type: object
+      properties:
+        id: { type: string, description: Unique identifier for the contact }
+        name: { type: string, description: Name of the contact }
+        email: { type: string, description: Email of the contact }
+        phone: { type: string, description: Phone number of the contact }
+    Error:
+      type: object
+      properties:
+        message: { type: string, description: Error message }
+        code: { type: integer, description: Error code }
   responses:
-    $ref: './swagger/components/responses.yaml'
+    NotFound:
+      description: Entity not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   securitySchemes:
     bearerAuth:
       type: http
