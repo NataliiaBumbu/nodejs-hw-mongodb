@@ -1,18 +1,18 @@
-Contact:
-  type: object
-  properties:
-    id:
-      type: string
-      description: Unique identifier for the contact
-    name:
-      type: string
-      description: Name of the contact
-    email:
-      type: string
-      description: Email of the contact
-      format: email
-    phone:
-      type: string
-      description: Phone number of the contact
-
- 
+components:
+  schemas:
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the contact
+        name:
+          type: string
+          description: Name of the contact
+        email:
+          type: string
+          description: Email of the contact
+          format: email
+        phone:
+          type: string
+          description: Phone number of the contact

@@ -1,21 +1,22 @@
-NotFound:
-  description: Entity not found.
-  content:
-    application/json:
-      schema:
-        type: object
-        properties:
-          message:
-            type: string
-            example: "Entity not found."
-
-Unauthorized:
-  description: Access token is missing or invalid.
-  content:
-    application/json:
-      schema:
-        type: object
-        properties:
-          message:
-            type: string
-            example: "Access token is missing or invalid."
+components:
+  responses:
+    NotFound:
+      description: Entity not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Entity not found
+    Unauthorized:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Access token is missing or invalid
