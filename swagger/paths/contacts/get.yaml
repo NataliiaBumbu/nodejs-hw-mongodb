@@ -22,4 +22,4 @@ get:
               schema:
                 type: array
                 items:
-                  $ref: './swagger/components/schemas/Contact'
+                  $ref: ../../components/schemas/contact.yaml

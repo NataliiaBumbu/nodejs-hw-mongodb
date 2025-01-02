@@ -18,8 +18,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './swagger/components/schemas.yaml/Contact'
+                $ref: ../../components/schemas/contact.yaml
         404:
-          $ref: './swagger/components/responses.yaml/NotFound'
+          $ref: ../../components/responses.yaml/NotFound
         401:
-          $ref: './swagger/components/responses.yaml/Unauthorized'
+          $ref: ../../components/responses.yaml/Unauthorized
