@@ -16,7 +16,23 @@ delete:
   responses:
     '200':
       description: Contact deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Contact deleted successfully
     '404':
-      $ref: '#/components/responses/NotFound'
+      description: Contact not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

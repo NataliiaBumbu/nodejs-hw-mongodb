@@ -22,14 +22,36 @@ patch:
           properties:
             name:
               type: string
+              description: Updated name of the contact
             email:
               type: string
+              description: Updated email of the contact
+              format: email
             phone:
               type: string
+              description: Updated phone number of the contact
   responses:
     '200':
       description: Contact updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Contact' # Схема оновленого контакту
+    '400':
+      description: Invalid input - bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     '404':
-      $ref: '#/components/responses/NotFound'
+      description: Contact not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     '401':
-      $ref: '#/components/responses/Unauthorized'
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

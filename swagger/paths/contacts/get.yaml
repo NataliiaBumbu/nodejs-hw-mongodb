@@ -25,6 +25,16 @@ get:
           schema:
             type: array
             items:
-              $ref: '../../components/schemas.yaml#/Contact'
+              $ref: '#/components/schemas/Contact'
+    400:
+      description: Invalid query parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error' 
     500:
-      description: Server error
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error' 

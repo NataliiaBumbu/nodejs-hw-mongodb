@@ -13,12 +13,19 @@ get:
         type: string
   responses:
     200:
-      description: A contact object
+      description: A contact object retrieved successfully
       content:
         application/json:
           schema:
-            $ref: '../../components/schemas.yaml#/Contact'
+            $ref: '#/components/schemas/Contact' 
     404:
       description: Contact not found
-    500:
-      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error' 
