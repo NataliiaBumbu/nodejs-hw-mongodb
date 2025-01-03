@@ -55,7 +55,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ContactInput'
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  example: "john.doe@example.com"
+                phone:
+                  type: string
+                  example: "+123456789"
       responses:
         '201':
           $ref: '#/components/responses/200'
@@ -96,7 +106,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ContactInput'
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                email:
+                  type: string
+                  example: "john.doe@example.com"
+                phone:
+                  type: string
+                  example: "+123456789"
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -133,18 +153,6 @@ components:
         id:
           type: string
           example: "64d72b2c2f1a4c001a7b2d72"
-        name:
-          type: string
-          example: "John Doe"
-        email:
-          type: string
-          example: "john.doe@example.com"
-        phone:
-          type: string
-          example: "+123456789"
-    ContactInput:
-      type: object
-      properties:
         name:
           type: string
           example: "John Doe"
