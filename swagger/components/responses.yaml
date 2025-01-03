@@ -1,22 +1,40 @@
-components:
-  responses:
-    NotFound:
-      description: Entity not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Entity not found
-    Unauthorized:
-      description: Access token is missing or invalid
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Access token is missing or invalid
+200:
+  description: Success
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Operation successful"
+400:
+  description: Bad Request
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Invalid input data"
+404:
+  description: Not Found
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Resource not found"
+401:
+  description: Unauthorized
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Unauthorized"

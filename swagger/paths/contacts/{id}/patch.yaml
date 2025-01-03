@@ -1,81 +1,29 @@
-patch:
-  tags:
-    - Contacts
-  summary: Update a contact by ID
-  operationId: updateContactById
-  description: Update specific fields of a contact by its unique identifier
-  security:
-    - bearerAuth: []
-  parameters:
-    - name: contactId
-      in: path
-      required: true
-      description: The unique ID of the contact
-      schema:
-        type: string
-  requestBody:
+tags:
+  - Contacts
+summary: Update contact by ID
+operationId: updateContactById
+description: Modify a contact using its unique ID
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
     required: true
+    schema:
+      type: string
+      example: "64d72b2c2f1a4c001a7b2d72"
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '../../../components/schemas/contact.yaml'
+responses:
+  '200':
+    description: Contact updated
     content:
       application/json:
         schema:
-          type: object
-          properties:
-            name:
-              type: string
-              description: The new name of the contact
-              example: Jane Doe
-            email:
-              type: string
-              description: The new email of the contact
-              example: janedoe@example.com
-            phone:
-              type: string
-              description: The new phone number of the contact
-              example: +987654321
-  responses:
-    '200':
-      description: Contact updated successfully
-      content:
-        application/json:
-          schema:
-            $ref: ../../components/schemas/contact.yaml
-    '400':
-      description: Invalid input
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Invalid input. Check your request body and try again.
-    '401':
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Unauthorized access. Please provide a valid token.
-    '404':
-      description: Contact not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Contact not found.
-    '500':
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: An unexpected error occurred. Please try again later.
+          $ref: '../../../components/schemas/contact.yaml'
+  '404':
+    $ref: '../../../components/responses.yaml#/404'

@@ -1,11 +1,9 @@
 import express from 'express';
-import swaggerUi from 'swagger-ui-express';
-import fs from 'fs';
-import yaml from 'js-yaml';
+import { swaggerServe, swaggerDocs } from '../middlewares/swaggerDocs.js';
 
 const router = express.Router();
-const swaggerDocument = yaml.load(fs.readFileSync('./docs/openapi.yaml', 'utf8'));
 
-router.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Роут для документації
+router.use('/', swaggerServe, swaggerDocs);
 
 export default router;

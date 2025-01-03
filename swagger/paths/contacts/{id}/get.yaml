@@ -1,25 +1,23 @@
-paths:
-  /contacts/{id}:
-    get:
-      tags:
-        - Contacts
-      summary: Get a contact by ID
-      operationId: getContactById
-      parameters:
-        - name: contactId
-          in: path
-          required: true
-          description: Unique ID of the contact
-          schema:
-            type: string
-      responses:
-        200:
-          description: Contact retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: ../../components/schemas/contact.yaml
-        404:
-          $ref: ../../components/responses.yaml/NotFound
-        401:
-          $ref: ../../components/responses.yaml/Unauthorized
+tags:
+  - Contacts
+summary: Get contact by ID
+operationId: getContactById
+description: Retrieve a contact using its unique ID
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+      example: "64d72b2c2f1a4c001a7b2d72"
+responses:
+  '200':
+    description: Contact found
+    content:
+      application/json:
+        schema:
+          $ref: '../../../components/schemas/contact.yaml'
+  '404':
+    $ref: '../../../components/responses.yaml#/404'

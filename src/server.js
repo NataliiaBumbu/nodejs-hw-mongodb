@@ -3,28 +3,28 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import initMongoConnection from './db/initMongoConnection.js';
 import contactsRouter from './routers/contacts.js';
-import authRouter from './routers/auth.js'; 
+import authRouter from './routers/auth.js';
+import apiDocsRouter from './routers/apiDocs.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 import errorHandler from './middlewares/errorHandler.js';
-import cookieParser from 'cookie-parser';
-import apiDocsRouter from './routers/apiDocs.js';
-
-
+import serverMiddleware from './middlewares/serverMiddleware.js';
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-// Додати маршрут для API-документації
-app.use('/api-docs', apiDocsRouter);
 
-// Підключення маршрутів
+// Маршрути
+app.use('/api-docs', apiDocsRouter); // API документація
 app.use('/auth', authRouter); // Авторизація та реєстрація
 app.use('/contacts', contactsRouter); // Робота з контактами
 
-// Middleware для обробки 404
+// Middleware для 404
 app.use(notFoundHandler);
 
 // Middleware для обробки помилок
@@ -32,20 +32,12 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 4002;
 
-async function startServer() {
-  try {
-    console.log('Starting the server...');
-    await initMongoConnection();
-    console.log('MongoDB connection established!');
+// Middleware для запуску сервера
+const startApp = serverMiddleware(async () => {
+  await initMongoConnection(); // Підключення до MongoDB
+});
 
-    app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start the server:', error.message);
-  }
-}
+// Запуск сервера
+app.listen(PORT, startApp);
 
-startServer();
-
-export default startServer;
+export default app;

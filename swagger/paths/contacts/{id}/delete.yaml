@@ -1,46 +1,27 @@
-delete:
-  tags:
-    - Contacts
-  summary: Delete a contact by ID
-  operationId: deleteContactById
-  description: Remove a specific contact by its unique identifier.
-  security:
-    - bearerAuth: []
-  parameters:
-    - name: contactId
-      in: path
-      required: true
-      description: The unique ID of the contact
-      schema:
-        type: string
-  responses:
-    '200':
-      description: Contact deleted successfully
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Contact deleted successfully
-    '404':
-      description: Contact not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Contact not found
-    '401':
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: Unauthorized access. Please provide a valid token.
+tags:
+  - Contacts
+summary: Delete contact by ID
+operationId: deleteContactById
+description: Remove a contact using its unique ID
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    schema:
+      type: string
+      example: "64d72b2c2f1a4c001a7b2d72"
+responses:
+  '200':
+    description: Contact deleted
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Contact successfully deleted"
+  '404':
+    $ref: '../../../components/responses.yaml#/404'
