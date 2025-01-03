@@ -18,6 +18,29 @@ paths:
       tags:
         - Contacts
       summary: Get list of contacts
+      description: Retrieve a list of contacts with optional query parameters
+      parameters:
+        - name: pageNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 1
+          description: Page number for pagination
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            example: 10
+          description: Number of contacts per page
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "name"
+          description: Field by which to sort contacts
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -32,17 +55,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: "John Doe"
-                email:
-                  type: string
-                  example: "john.doe@example.com"
-                phone:
-                  type: string
-                  example: "+123456789"
+              $ref: '#/components/schemas/ContactInput'
       responses:
         '201':
           $ref: '#/components/responses/200'
@@ -83,17 +96,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: "John Doe"
-                email:
-                  type: string
-                  example: "john.doe@example.com"
-                phone:
-                  type: string
-                  example: "+123456789"
+              $ref: '#/components/schemas/ContactInput'
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -130,6 +133,18 @@ components:
         id:
           type: string
           example: "64d72b2c2f1a4c001a7b2d72"
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          example: "john.doe@example.com"
+        phone:
+          type: string
+          example: "+123456789"
+    ContactInput:
+      type: object
+      properties:
         name:
           type: string
           example: "John Doe"
