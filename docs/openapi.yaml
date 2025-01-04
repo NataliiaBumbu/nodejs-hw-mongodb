@@ -240,6 +240,16 @@ components:
             - home
             - personal
           example: "work"
+        createdAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the contact was created"
+          example: "2024-12-05T09:39:50.159+00:00"
+        updatedAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the contact was last updated"
+          example: "2024-12-05T09:39:50.159+00:00"  
         userId:
           type: string
           description: "The ID of the user who owns this contact"
