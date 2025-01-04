@@ -241,28 +241,10 @@ components:
             - home
             - personal
           example: "work"
-        createdAt:
-          type: string
-          format: date-time
-          description: "Timestamp when the contact was created"
-          example: "2024-12-05T09:39:50.159+00:00"
-        updatedAt:
-          type: string
-          format: date-time
-          description: "Timestamp when the contact was last updated"
-          example: "2024-12-05T09:39:50.159+00:00"
         userId:
           type: string
           description: "The ID of the user who owns this contact"
           example: "67583381326117753aaf9cc4"
-        __v:
-          type: integer
-          description: "Version key used by MongoDB"
-          example: 0
-        photo:
-          type: string
-          description: "URL to the contact's photo"
-          example: "https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg"
   responses:
     200:
       description: Success
