@@ -197,8 +197,7 @@ paths:
             type: string
       responses:
         '204':
-          description: No Content
-          content: {}
+          $ref: '#/components/responses/204'
         '401':
           $ref: '#/components/responses/401'
         '404':
@@ -256,6 +255,16 @@ components:
               message:
                 type: string
                 example: "Operation successful"
+    204:
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Contact successfully deleted"
     400:
       description: Bad Request
       content:
