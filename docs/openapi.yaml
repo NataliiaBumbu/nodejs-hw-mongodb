@@ -34,13 +34,23 @@ paths:
             type: integer
             example: 10
           description: Number of contacts per page
-        - name: sort
+        - name: sortBy
           in: query
           required: false
           schema:
             type: string
             example: "name"
-          description: Field by which to sort contacts
+          description: Field by which to sort contacts (e.g., name, email)
+        - name: sortOrder
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+            example: "asc"
+          description: Sort order (ascending or descending)
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -59,13 +69,37 @@ paths:
               properties:
                 name:
                   type: string
+                  description: "Full name of the contact"
                   example: "John Doe"
+                phoneNumber:
+                  type: string
+                  description: "The contact's phone number"
+                  example: "+123456789"
                 email:
                   type: string
+                  description: "The contact's email address"
                   example: "john.doe@example.com"
-                phone:
+                isFavourite:
+                  type: boolean
+                  description: "Indicates whether the contact is a favorite"
+                  example: true
+                contactType:
                   type: string
-                  example: "+123456789"
+                  description: "The category of the contact"
+                  enum:
+                    - work
+                    - home
+                    - personal
+                  example: "work"
+                photo:
+                  type: string
+                  description: "URL to the contact's photo"
+                  example: "https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg"
+              required:
+                - name
+                - phoneNumber
+                - email
+                - contactType
       responses:
         '201':
           $ref: '#/components/responses/200'
@@ -101,6 +135,7 @@ paths:
           required: true
           schema:
             type: string
+            description: "Unique identifier of the contact"
       requestBody:
         required: true
         content:
@@ -110,13 +145,37 @@ paths:
               properties:
                 name:
                   type: string
-                  example: "John Doe"
+                  description: "Full name of the contact"
+                  example: "Updated User"
+                phoneNumber:
+                  type: string
+                  description: "The contact's phone number"
+                  example: "+380987654321"
                 email:
                   type: string
-                  example: "john.doe@example.com"
-                phone:
+                  description: "The contact's email address"
+                  example: "updated.email@example.com"
+                isFavourite:
+                  type: boolean
+                  description: "Indicates whether the contact is a favorite"
+                  example: false
+                contactType:
                   type: string
-                  example: "+123456789"
+                  description: "The category of the contact"
+                  enum:
+                    - work
+                    - home
+                    - personal
+                  example: "home"
+                photo:
+                  type: string
+                  description: "URL to the contact's photo"
+                  example: "https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg"
+              required:
+                - name
+                - phoneNumber
+                - email
+                - contactType
       responses:
         '200':
           $ref: '#/components/responses/200'
@@ -126,8 +185,6 @@ paths:
           $ref: '#/components/responses/401'
         '404':
           $ref: '#/components/responses/404'
-        '500':
-          $ref: '#/components/responses/500'
     delete:
       tags:
         - Contacts
@@ -139,8 +196,9 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          $ref: '#/components/responses/200'
+        '204':
+          description: No Content
+          content: {}
         '401':
           $ref: '#/components/responses/401'
         '404':
@@ -149,19 +207,62 @@ components:
   schemas:
     Contact:
       type: object
+      required:
+        - name
+        - phoneNumber
+        - email
+        - contactType
       properties:
-        id:
+        _id:
           type: string
-          example: "64d72b2c2f1a4c001a7b2d72"
+          description: "Unique identifier for the contact"
+          example: "675174e6581cd3520ccd8ca1"
         name:
           type: string
-          example: "John Doe"
+          description: "The full name of the contact"
+          example: "Test User"
+        phoneNumber:
+          type: string
+          description: "The contact's phone number"
+          example: "+123456789"
         email:
           type: string
-          example: "john.doe@example.com"
-        phone:
+          description: "The contact's email address"
+          example: "test@example.com"
+        isFavourite:
+          type: boolean
+          description: "Indicates whether the contact is a favorite"
+          example: true
+        contactType:
           type: string
-          example: "+123456789"
+          description: "The category of the contact"
+          enum:
+            - work
+            - home
+            - personal
+          example: "work"
+        createdAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the contact was created"
+          example: "2024-12-05T09:39:50.159+00:00"
+        updatedAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the contact was last updated"
+          example: "2024-12-05T09:39:50.159+00:00"
+        userId:
+          type: string
+          description: "The ID of the user who owns this contact"
+          example: "67583381326117753aaf9cc4"
+        __v:
+          type: integer
+          description: "Version key used by MongoDB"
+          example: 0
+        photo:
+          type: string
+          description: "URL to the contact's photo"
+          example: "https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg"
   responses:
     200:
       description: Success
@@ -203,13 +304,3 @@ components:
               message:
                 type: string
                 example: "Resource not found"
-    500:
-      description: Internal Server Error
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: "Internal server error"
