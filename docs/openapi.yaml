@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   version: 1.0.0
   title: Contacts API
@@ -194,8 +194,9 @@ paths:
                   enum: ['work', 'home', 'personal']
                   example: 'personal'
                 photo:
-                  type: string
-                  format: binary
+                   type: string
+                   format: binary
+                   description: "The contact's photo file in binary format."
       responses:
         '201':
           description: Contact Successfully Created
