@@ -1,18 +1,141 @@
 tags:
   - Contacts
-summary: Get list of contacts
+summary: Retrieve a List of Contacts
 operationId: getContacts
-description: Retrieve a list of all contacts
+description: |
+  **Retrieve a list of contacts** with advanced filtering, sorting, and pagination options.
 security:
   - bearerAuth: []
+parameters:
+  - in: query
+    name: page
+    schema:
+      type: integer
+    example: 1
+    description: |
+      **Page Number**
+      The page number to retrieve. Defaults to `1` if not specified.
+
+  - in: query
+    name: perPage
+    schema:
+      type: integer
+    example: 10
+    description: |
+      **Contacts per Page**
+      The number of contacts to display per page. Defaults to `10` if not specified.
+
+  - in: query
+    name: sortBy
+    schema:
+      type: string
+    example: 'createdAt'
+    description: |
+      **Sorting Field**
+  - in: query
+    name: sortOrder
+    schema:
+      type: string
+      enum: ['asc', 'desc']
+    example: 'asc'
+    description: |
+      **Sorting Order**
+  - in: query
+    name: isFavorite
+    schema:
+      type: boolean
+    example: true
+    description: |
+      **Filter by Favorite Status**
+  - in: query
+    name: contactType
+    schema:
+      type: string
+      enum: ['work', 'home', 'personal']
+    example: personal
+    description: |
+      **Filter by Contact Type**
 responses:
   '200':
-    description: List of contacts
+    description: |
+      **Contacts Retrieved Successfully**
     content:
       application/json:
         schema:
-          type: array
-          items:
-            $ref: '../../components/schemas/contact.yaml'
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+              description: HTTP status code
+            message:
+              type: string
+              example: Successfully retrieved contacts!
+              description: Confirmation message indicating successful retrieval
+            data:
+              type: object
+              required:
+                - data
+                - page
+                - perPage
+                - totalItems
+                - totalPages
+                - hasNextPage
+                - hasPreviousPage
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    allOf:
+                      - $ref: '../../components/schemas/contact.yaml'
+                      - type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 66cb5f4d0318528063e77c98
+                            description: Unique identifier for the contact
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: '2024-08-29T20:39:40.775Z'
+                            description: The date and time when the contact was created
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            example: '2024-08-29T20:39:40.775Z'
+                            description: The date and time when the contact was last updated
+                page:
+                  type: integer
+                  example: 1
+                  description: Current page number
+                perPage:
+                  type: integer
+                  example: 10
+                  description: Number of contacts per page
+                totalItems:
+                  type: integer
+                  example: 4
+                  description: Total number of contacts matching the query
+                totalPages:
+                  type: integer
+                  example: 1
+                  description: Total number of pages available
+                hasNextPage:
+                  type: boolean
+                  example: false
+                  description: Whether there are more pages available after the current page
+                hasPreviousPage:
+                  type: boolean
+                  example: false
+                  description: Whether there are pages available before the current page
+
+  '401':
+    $ref: ../../components/responses/401.yaml
+
   '404':
-    $ref: '../../components/responses.yaml#/404'
+    $ref: ../../components/responses/404.yaml

@@ -1,23 +1,75 @@
 tags:
   - Contacts
-summary: Get contact by ID
-operationId: getContactById
-description: Retrieve a contact using its unique ID
+summary: Retrieve a Contact by ID
+operationId: getContact
+description: |
+  **Retrieve a specific contact by its unique identifier.**
 security:
   - bearerAuth: []
 parameters:
   - in: path
-    name: id
+    name: contactId
     required: true
     schema:
       type: string
-      example: "64d72b2c2f1a4c001a7b2d72"
+      example: '66cb5f4d0318528063e77c98'
+    description: |
+      **The unique identifier of the contact.**
 responses:
   '200':
-    description: Contact found
+    description: |
+      **Contact Retrieved Successfully**
+
+      The contact details were successfully retrieved. The response contains the following structure:
     content:
       application/json:
         schema:
-          $ref: '../../../components/schemas/contact.yaml'
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 200
+              description: HTTP status code
+            message:
+              type: string
+              example: Successfully found contact with id 66cb5f4d0318528063e77c98!
+              description: Human-readable message confirming the retrieval of the contact
+            data:
+              type: object
+              $ref: '../../../components/schemas/contact.yaml'
+              description: The contact object containing all details
+
+  '401':
+    $ref: ../../../components/responses/401.yaml
+
   '404':
-    $ref: '../../../components/responses.yaml#/404'
+    description: |
+      **Contact Not Found**
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - status
+            - message
+            - data
+          properties:
+            status:
+              type: integer
+              example: 404
+            message:
+              type: string
+              example: 'NotFoundError'
+            data:
+              type: object
+              required:
+                - message
+                - errors
+              properties:
+                message:
+                  type: string
+                  example: 'Contact not found'

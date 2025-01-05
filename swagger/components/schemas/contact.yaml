@@ -55,3 +55,53 @@
           type: string
           description: "URL to the contact's photo"
           example: "https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg"
+          
+
+type: object
+required:
+  - name
+  - phoneNumber
+  - contactType
+properties:
+  _id:
+    type: string
+    description: "Unique identifier for the contact"
+    example: "675174e6581cd3520ccd8ca1"
+  name:
+    description: 'The full name of the contact'
+    type: string
+    example: 'Test User'
+
+  phoneNumber:
+    description: "The contact's phone number"
+    type: string
+    example: '+123456789'
+
+  email:
+    description: "The contact's email address"
+    type: string
+    example: 'test@example.com'
+
+  isFavorite:
+    description: 'Indicates whether the contact is marked as a favorite'
+    type: boolean
+    example: true
+
+  contactType:
+    description: 'The category of the contact (e.g., work, home, personal)'
+    type: string
+    enum:
+      - work
+      - home
+      - personal
+    example: 'personal'
+
+  userId:
+    description: 'The ID of the user who owns this contact'
+    type: string
+    example: '67583381326117753aaf9cc4'
+
+  photo:
+    description: "URL to the contact's photo"
+    type: string
+    example: 'https://res.cloudinary.com/dg5fttpzf/image/upload/v1724604273/vnytdl8f8xwylaaaud6b.jpg'
