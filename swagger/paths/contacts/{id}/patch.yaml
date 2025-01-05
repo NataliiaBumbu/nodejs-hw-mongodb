@@ -9,7 +9,7 @@ security:
   - bearerAuth: []
 parameters:
   - in: path
-    name: contactId
+    name: id
     required: true
     schema:
       type: string
@@ -87,6 +87,7 @@ responses:
   '201':
     description: |
       **Contact Successfully Created**
+
     content:
       application/json:
         schema:

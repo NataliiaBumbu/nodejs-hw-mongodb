@@ -63,7 +63,7 @@ responses:
               example: Successfully created a contact!
               description: Confirmation message indicating successful creation
             data:
-              allOf:
+              allOf: 
                 - $ref: '../../components/schemas/contact.yaml'
                 - type: object
                   properties:
